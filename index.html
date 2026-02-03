@@ -16,7 +16,9 @@
     </header>
 
     <div class="main-content">
-      <aside class="sidebar sortable-container" id="sidebarContainer">
+      <div class="content-wrapper">
+        <!-- 左侧配置区域 -->
+        <aside class="sidebar sortable-container" id="sidebarContainer">
         <div class="panel sortable-item" draggable="true" data-panel="serial">
           <h3>串口配置</h3>
           <div class="form-group">
@@ -86,200 +88,133 @@
           </div>
         </div>
 
-        <div class="panel">
-          <h3>Modbus TCP服务</h3>
-          <div class="form-group">
-            <label>绑定IP地址</label>
-            <select id="modbusIP">
-              <option value="">-- 选择IP地址 --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>端口</label>
-            <input type="number" id="modbusPort" value="502" min="1" max="65535">
-          </div>
-          <div class="button-group">
-            <button id="startModbusBtn" class="btn btn-success">启动</button>
-            <button id="stopModbusBtn" class="btn btn-danger" disabled>停止</button>
-            <button id="showModbusDataBtn" class="btn btn-info">查看寄存器数据</button>
-          </div>
-          <div class="server-status">
-            <span id="modbusStatus" class="status-indicator-text">● 未启动</span>
-          </div>
-        </div>
+        <!-- Modbus和NTP服务已移至底部右侧可拖拽区域 -->
 
-        <div class="panel">
-          <h3>NTP服务</h3>
-          <div class="form-group">
-            <label>绑定IP地址</label>
-            <select id="ntpIP">
-              <option value="">-- 选择IP地址 --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>端口</label>
-            <input type="number" id="ntpPort" value="1230" min="1" max="65535">
-            <small style="color: #666;">⚠️ 端口123需要管理员权限，建议使用1230或更高端口</small>
-          </div>
-          <div class="form-group">
-            <label>时区偏移</label>
-            <select id="ntpTimezone">
-              <option value="-12">UTC-12</option>
-              <option value="-11">UTC-11</option>
-              <option value="-10">UTC-10</option>
-              <option value="-9">UTC-9</option>
-              <option value="-8">UTC-8</option>
-              <option value="-7">UTC-7</option>
-              <option value="-6">UTC-6</option>
-              <option value="-5">UTC-5</option>
-              <option value="-4">UTC-4</option>
-              <option value="-3">UTC-3</option>
-              <option value="-2">UTC-2</option>
-              <option value="-1">UTC-1</option>
-              <option value="0">UTC+0</option>
-              <option value="1">UTC+1</option>
-              <option value="2">UTC+2</option>
-              <option value="3">UTC+3</option>
-              <option value="4">UTC+4</option>
-              <option value="5">UTC+5</option>
-              <option value="6">UTC+6</option>
-              <option value="7">UTC+7</option>
-              <option value="8" selected>UTC+8</option>
-              <option value="9">UTC+9</option>
-              <option value="10">UTC+10</option>
-              <option value="11">UTC+11</option>
-              <option value="12">UTC+12</option>
-            </select>
-          </div>
-          <div class="button-group">
-            <button id="startNtpBtn" class="btn btn-success">启动</button>
-            <button id="stopNtpBtn" class="btn btn-danger" disabled>停止</button>
-          </div>
-          <div class="server-status">
-            <span id="ntpStatus" class="status-indicator-text">● 未启动</span>
-          </div>
-        </div>
 
-        <div class="panel sortable-item" draggable="true" data-panel="modbus">
-          <h3>Modbus TCP服务</h3>
-          <div class="form-group">
-            <label>绑定IP地址</label>
-            <select id="modbusIP">
-              <option value="">-- 选择IP地址 --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>端口</label>
-            <input type="number" id="modbusPort" value="502" min="1" max="65535">
-          </div>
-          <div class="button-group">
-            <button id="startModbusBtn" class="btn btn-success">启动</button>
-            <button id="stopModbusBtn" class="btn btn-danger" disabled>停止</button>
-            <button id="showModbusDataBtn" class="btn btn-info">查看寄存器数据</button>
-          </div>
-          <div class="server-status">
-            <span id="modbusStatus" class="status-indicator-text">● 未启动</span>
-          </div>
-        </div>
-
-        <div class="panel sortable-item" draggable="true" data-panel="ntp">
-          <h3>NTP服务</h3>
-          <div class="form-group">
-            <label>绑定IP地址</label>
-            <select id="ntpIP">
-              <option value="">-- 选择IP地址 --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>端口</label>
-            <input type="number" id="ntpPort" value="1230" min="1" max="65535">
-            <small style="color: #666;">⚠️ 端口123需要管理员权限，建议使用1230或更高端口</small>
-          </div>
-          <div class="form-group">
-            <label>时区偏移</label>
-            <select id="ntpTimezone">
-              <option value="-12">UTC-12</option>
-              <option value="-11">UTC-11</option>
-              <option value="-10">UTC-10</option>
-              <option value="-9">UTC-9</option>
-              <option value="-8">UTC-8</option>
-              <option value="-7">UTC-7</option>
-              <option value="-6">UTC-6</option>
-              <option value="-5">UTC-5</option>
-              <option value="-4">UTC-4</option>
-              <option value="-3">UTC-3</option>
-              <option value="-2">UTC-2</option>
-              <option value="-1">UTC-1</option>
-              <option value="0">UTC+0</option>
-              <option value="1">UTC+1</option>
-              <option value="2">UTC+2</option>
-              <option value="3">UTC+3</option>
-              <option value="4">UTC+4</option>
-              <option value="5">UTC+5</option>
-              <option value="6">UTC+6</option>
-              <option value="7">UTC+7</option>
-              <option value="8" selected>UTC+8</option>
-              <option value="9">UTC+9</option>
-              <option value="10">UTC+10</option>
-              <option value="11">UTC+11</option>
-              <option value="12">UTC+12</option>
-            </select>
-          </div>
-          <div class="button-group">
-            <button id="startNtpBtn" class="btn btn-success">启动</button>
-            <button id="stopNtpBtn" class="btn btn-danger" disabled>停止</button>
-          </div>
-          <div class="server-status">
-            <span id="ntpStatus" class="status-indicator-text">● 未启动</span>
-          </div>
-        </div>
 
         <div class="panel sortable-item" draggable="true" data-panel="rawdata">
           <h3>原始数据</h3>
           <div id="rawData" class="raw-data"></div>
         </div>
+        
+        <!-- 底部右侧服务区域 -->
+        <div class="services-container sortable-container" id="servicesContainer">
+          <div class="panel sortable-item" draggable="true" data-panel="modbus">
+            <h3>Modbus TCP服务</h3>
+            <div class="form-group">
+              <label>绑定IP地址</label>
+              <select id="modbusIP">
+                <option value="">-- 选择IP地址 --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>端口</label>
+              <input type="number" id="modbusPort" value="502" min="1" max="65535">
+            </div>
+            <div class="button-group">
+              <button id="startModbusBtn" class="btn btn-success">启动</button>
+              <button id="stopModbusBtn" class="btn btn-danger" disabled>停止</button>
+              <button id="showModbusDataBtn" class="btn btn-info">查看寄存器数据</button>
+            </div>
+            <div class="server-status">
+              <span id="modbusStatus" class="status-indicator-text">● 未启动</span>
+            </div>
+          </div>
+
+          <div class="panel sortable-item" draggable="true" data-panel="ntp">
+            <h3>NTP服务</h3>
+            <div class="form-group">
+              <label>绑定IP地址</label>
+              <select id="ntpIP">
+                <option value="">-- 选择IP地址 --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>端口</label>
+              <input type="number" id="ntpPort" value="1230" min="1" max="65535">
+              <small style="color: #666;">⚠️ 端口123需要管理员权限，建议使用1230或更高端口</small>
+            </div>
+            <div class="form-group">
+              <label>时区偏移</label>
+              <select id="ntpTimezone">
+                <option value="-12">UTC-12</option>
+                <option value="-11">UTC-11</option>
+                <option value="-10">UTC-10</option>
+                <option value="-9">UTC-9</option>
+                <option value="-8">UTC-8</option>
+                <option value="-7">UTC-7</option>
+                <option value="-6">UTC-6</option>
+                <option value="-5">UTC-5</option>
+                <option value="-4">UTC-4</option>
+                <option value="-3">UTC-3</option>
+                <option value="-2">UTC-2</option>
+                <option value="-1">UTC-1</option>
+                <option value="0">UTC+0</option>
+                <option value="1">UTC+1</option>
+                <option value="2">UTC+2</option>
+                <option value="3">UTC+3</option>
+                <option value="4">UTC+4</option>
+                <option value="5">UTC+5</option>
+                <option value="6">UTC+6</option>
+                <option value="7">UTC+7</option>
+                <option value="8" selected>UTC+8</option>
+                <option value="9">UTC+9</option>
+                <option value="10">UTC+10</option>
+                <option value="11">UTC+11</option>
+                <option value="12">UTC+12</option>
+              </select>
+            </div>
+            <div class="button-group">
+              <button id="startNtpBtn" class="btn btn-success">启动</button>
+              <button id="stopNtpBtn" class="btn btn-danger" disabled>停止</button>
+            </div>
+            <div class="server-status">
+              <span id="ntpStatus" class="status-indicator-text">● 未启动</span>
+            </div>
+          </div>
+        </div>
       </aside>
 
       <main class="dashboard">
-        <div class="cards-row">
-          <div class="card">
+        <div class="cards-row sortable-container" id="cardsContainer">
+          <div class="card sortable-item" draggable="true" data-card="gnss">
             <h3>定位系统</h3>
             <div id="gnssDisplay" class="display-value">自动</div>
           </div>
-          <div class="card">
+          <div class="card sortable-item" draggable="true" data-card="date">
             <h3>日期</h3>
             <div id="dateDisplay" class="display-value">--</div>
           </div>
-          <div class="card">
+          <div class="card sortable-item" draggable="true" data-card="time">
             <h3>时间</h3>
             <div id="timeDisplay" class="display-value">--:--:--</div>
           </div>
-          <div class="card">
+          <div class="card sortable-item" draggable="true" data-card="altitude">
             <h3>海拔</h3>
             <div id="altitudeDisplay" class="display-value">0.0 m</div>
           </div>
         </div>
-        <div class="cards-row">
-          <div class="card">
+        <div class="cards-row sortable-container" id="cardsContainer2">
+          <div class="card sortable-item" draggable="true" data-card="status">
             <h3>定位状态</h3>
             <div id="statusDisplay" class="display-value">等待数据</div>
           </div>
         </div>
 
-        <div class="cards-row">
-          <div class="card">
+        <div class="cards-row sortable-container" id="cardsContainer3">
+          <div class="card sortable-item" draggable="true" data-card="satellites">
             <h3>卫星数量</h3>
             <div id="satellitesDisplay" class="display-value">0</div>
           </div>
-          <div class="card">
+          <div class="card sortable-item" draggable="true" data-card="longitude">
             <h3>经度</h3>
             <div id="longitudeDisplay" class="display-value">0.000000</div>
           </div>
-          <div class="card">
+          <div class="card sortable-item" draggable="true" data-card="latitude">
             <h3>纬度</h3>
             <div id="latitudeDisplay" class="display-value">0.000000</div>
           </div>
-          <div class="card">
+          <div class="card sortable-item" draggable="true" data-card="quality">
             <h3>定位质量</h3>
             <div id="qualityDisplay" class="display-value">--</div>
           </div>
@@ -349,6 +284,8 @@
           </div>
         </div>
       </main>
+      
+
     </div>
   </div>
 

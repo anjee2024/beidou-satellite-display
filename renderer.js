@@ -665,17 +665,11 @@ function addDragHandles() {
 }
 
 function handleDragStart(e) {
-  if (!e.target.classList.contains('sortable-item')) {
-    // 检查是否是拖拽手柄被点击
-    const handle = e.target.closest('.drag-handle');
-    if (!handle) return;
-    draggedElement = handle.closest('.sortable-item');
-  } else {
-    draggedElement = e.target;
-  }
+  // 允许直接拖拽面板/卡片的任何位置，或者拖拽手柄
+  const sortableItem = e.target.closest('.sortable-item');
+  if (!sortableItem) return;
   
-  if (!draggedElement) return;
-  
+  draggedElement = sortableItem;
   draggedContainer = draggedElement.parentElement;
   draggedElement.classList.add('dragging');
   
@@ -787,9 +781,9 @@ function saveLayout() {
     }
   });
   
-  // 保存信息面板顺序
-  const dashboardPanels = [...document.querySelectorAll('#dashboardContainer .sortable-item')];
-  layout.dashboard = dashboardPanels.map(panel => panel.dataset.panel);
+  // 保存信息面板顺序（卫星可视化和信号强度）
+  const infoPanels = [...document.querySelectorAll('.info-panels-row .sortable-item')];
+  layout.infoPanels = infoPanels.map(panel => panel.dataset.panel);
   
   localStorage.setItem('beidou-layout', JSON.stringify(layout));
 }
@@ -816,7 +810,13 @@ function loadLayout() {
     // 恢复卡片顺序
     if (layout.cards) {
       Object.entries(layout.cards).forEach(([containerId, cardTypes]) => {
-        const container = document.querySelector(containerId);
+        // 映射旧的容器ID到新的ID
+        let selector = containerId;
+        if (containerId === '#cardsContainer') selector = '#cardsContainer';
+        if (containerId === '#cardsContainer2') selector = '#cardsContainer2';
+        if (containerId === '#cardsContainer3') selector = '#cardsContainer3';
+        
+        const container = document.querySelector(selector);
         if (container && Array.isArray(cardTypes)) {
           cardTypes.forEach(cardType => {
             const card = container.querySelector(`[data-card="${cardType}"]`);
@@ -828,15 +828,17 @@ function loadLayout() {
       });
     }
     
-    // 恢复仪表盘面板顺序
-    if (layout.dashboard && Array.isArray(layout.dashboard)) {
-      const dashboard = document.getElementById('dashboardContainer');
-      layout.dashboard.forEach(panelType => {
-        const panel = dashboard.querySelector(`[data-panel="${panelType}"]`);
-        if (panel) {
-          dashboard.appendChild(panel);
-        }
-      });
+    // 恢复信息面板顺序（卫星可视化和信号强度）
+    if (layout.infoPanels && Array.isArray(layout.infoPanels)) {
+      const dashboard = document.querySelector('.info-panels-row');
+      if (dashboard) {
+        layout.infoPanels.forEach(panelType => {
+          const panel = dashboard.querySelector(`[data-panel="${panelType}"]`);
+          if (panel) {
+            dashboard.appendChild(panel);
+          }
+        });
+      }
     }
     
   } catch (error) {
