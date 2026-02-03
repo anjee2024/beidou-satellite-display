@@ -398,6 +398,202 @@ body {
   }
 }
 
+/* 拖拽相关样式 */
+.sortable-container {
+  position: relative;
+}
+
+.sortable-item {
+  cursor: move;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.sortable-item:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.sortable-item.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg) scale(0.95);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.sortable-item.drag-over {
+  border: 2px dashed #667eea;
+  background-color: rgba(102, 126, 234, 0.1);
+}
+
+.sortable-placeholder {
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+  margin: 10px 0;
+  opacity: 0.8;
+  animation: pulse-placeholder 1s infinite;
+}
+
+@keyframes pulse-placeholder {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.5); }
+}
+
+.drag-handle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #999;
+  font-size: 18px;
+  cursor: grab;
+  z-index: 10;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* 卫星可视化图例样式 */
+.skyview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.legend-toggle {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.legend-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.skyview-legend {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(248, 249, 250, 0.95);
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.legend-title {
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.legend-symbol {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.legend-strong {
+  background: linear-gradient(90deg, #51cf66 0%, #94d82d 100%);
+}
+
+.legend-moderate {
+  background: linear-gradient(90deg, #ffd43b 0%, #ffe066 100%);
+}
+
+.legend-weak {
+  background: linear-gradient(90deg, #ff6b6b 0%, #ffa94d 100%);
+}
+
+.legend-center {
+  background: #fff;
+  border: 2px solid #667eea;
+}
+
+.legend-circle {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.legend-line {
+  width: 16px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.legend-numbers {
+  font-weight: 700;
+  color: #667eea;
+  margin-right: 8px;
+  flex-shrink: 0;
+  width: 40px;
+}
+
+.legend-label {
+  color: #555;
+  line-height: 1.4;
+}
+
+/* 布局重置按钮 */
+.layout-controls {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.layout-reset-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.layout-reset-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
 /* Modal对话框样式 */
 .modal {
   display: none;

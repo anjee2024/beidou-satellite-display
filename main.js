@@ -11,6 +11,7 @@ let parser = null;
 let modbusServer = null;
 let ntpServer = null;
 let currentTimezoneOffset = 8; // 当前时区偏移（默认UTC+8）
+let gnssSystem = 'auto'; // 定位系统选择（auto/beidou/gps）
 let lastModbusUpdate = 0; // 上次更新Modbus寄存器的时间
 const MODBUS_UPDATE_INTERVAL = 100; // Modbus寄存器更新最小间隔(ms)
 
@@ -159,10 +160,25 @@ function parseNMEA(data) {
   const parts = trimmedData.split(',');
   const messageType = parts[0];
 
+  // 根据GNSS系统选择过滤NMEA消息
+  if (gnssSystem === 'beidou') {
+    // 只接受北斗消息 ($BD...)
+    if (!messageType.startsWith('$BD') && !messageType.startsWith('$GN')) {
+      return null;
+    }
+  } else if (gnssSystem === 'gps') {
+    // 只接受GPS消息 ($GP...)
+    if (!messageType.startsWith('$GP') && !messageType.startsWith('$GN')) {
+      return null;
+    }
+  }
+  // gnssSystem === 'auto' 时接受所有消息
+
   let result = {
     type: messageType,
     raw: trimmedData,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    gnssSystem: gnssSystem // 添加当前GNSS系统信息
   };
 
   // GPRMC - 推荐最小定位信息
@@ -437,6 +453,13 @@ ipcMain.handle('get-ntp-status', async () => {
   } catch (error) {
     return { success: false, message: error.message };
   }
+});
+
+// 更新GNSS系统选择
+ipcMain.handle('update-gnss-system', async (event, system) => {
+  gnssSystem = system;
+  console.log(`GNSS系统已更新: ${system === 'auto' ? '自动' : system === 'beidou' ? '北斗' : 'GPS'}`);
+  return { success: true };
 });
 
 // 更新时区

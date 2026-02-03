@@ -11,6 +11,7 @@ const MAX_RAW_DATA_LINES = 50;
 // DOM元素
 const portSelect = document.getElementById('portSelect');
 const baudRateSelect = document.getElementById('baudRate');
+const gnssSelect = document.getElementById('gnssSelect');
 const timezoneSelect = document.getElementById('timezoneSelect');
 const connectBtn = document.getElementById('connectBtn');
 const disconnectBtn = document.getElementById('disconnectBtn');
@@ -35,6 +36,7 @@ const stopNtpBtn = document.getElementById('stopNtpBtn');
 const ntpStatus = document.getElementById('ntpStatus');
 
 // 显示元素
+const gnssDisplay = document.getElementById('gnssDisplay');
 const dateDisplay = document.getElementById('dateDisplay');
 const timeDisplay = document.getElementById('timeDisplay');
 const altitudeDisplay = document.getElementById('altitudeDisplay');
@@ -99,6 +101,12 @@ function setupEventListeners() {
   connectBtn.addEventListener('click', connectSerial);
   disconnectBtn.addEventListener('click', disconnectSerial);
   refreshBtn.addEventListener('click', refreshPorts);
+  gnssSelect.addEventListener('change', async (e) => {
+    const system = e.target.value;
+    // 同步GNSS系统选择到主进程
+    await ipcRenderer.invoke('update-gnss-system', system);
+    addRawData(`定位系统切换为: ${system === 'auto' ? '自动' : system === 'beidou' ? '北斗' : 'GPS'}`);
+  });
   timezoneSelect.addEventListener('change', async (e) => {
     const option = e.target.selectedOptions[0];
     currentTimezoneOffset = parseInt(option.dataset.offset);
@@ -331,6 +339,16 @@ function updateConnectionStatus(connected) {
 // 处理串口数据
 function handleSerialData(data) {
   addRawData(data.raw);
+
+  // 更新GNSS系统显示
+  if (data.gnssSystem) {
+    const systemText = {
+      'auto': '自动',
+      'beidou': '北斗',
+      'gps': 'GPS'
+    };
+    gnssDisplay.textContent = systemText[data.gnssSystem] || '自动';
+  }
 
   switch (data.type) {
     case '$GPRMC':
@@ -593,6 +611,282 @@ function addRawData(text, isError = false) {
 
 // 启动应用
 init();
+
+// 初始化拖拽和图例功能
+initDragAndDrop();
+initSkyViewLegend();
+addLayoutControls();
+
+// 暴露重置布局函数到全局作用域，供HTML调用
+globalThis.resetLayout = resetLayout;
+
+// ========== 拖拽布局功能 ==========
+let draggedElement = null;
+let draggedContainer = null;
+let placeholder = null;
+
+// 初始化拖拽功能
+function initDragAndDrop() {
+  const containers = document.querySelectorAll('.sortable-container');
+  
+  containers.forEach(container => {
+    container.addEventListener('dragover', handleDragOver);
+    container.addEventListener('drop', handleDrop);
+    container.addEventListener('dragenter', handleDragEnter);
+    container.addEventListener('dragleave', handleDragLeave);
+  });
+  
+  // 为所有可拖拽元素添加事件监听
+  document.addEventListener('dragstart', handleDragStart);
+  document.addEventListener('dragend', handleDragEnd);
+  
+  // 添加拖拽手柄
+  addDragHandles();
+  
+  // 加载保存的布局
+  loadLayout();
+}
+
+// 添加拖拽手柄到面板和卡片
+function addDragHandles() {
+  const panels = document.querySelectorAll('.panel.sortable-item');
+  const cards = document.querySelectorAll('.card.sortable-item');
+  
+  [...panels, ...cards].forEach(item => {
+    if (!item.querySelector('.drag-handle')) {
+      const handle = document.createElement('div');
+      handle.className = 'drag-handle';
+      handle.innerHTML = '⋮⋮';
+      handle.title = '拖拽重新布局';
+      item.style.position = 'relative';
+      item.appendChild(handle);
+    }
+  });
+}
+
+function handleDragStart(e) {
+  if (!e.target.classList.contains('sortable-item')) {
+    // 检查是否是拖拽手柄被点击
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    draggedElement = handle.closest('.sortable-item');
+  } else {
+    draggedElement = e.target;
+  }
+  
+  if (!draggedElement) return;
+  
+  draggedContainer = draggedElement.parentElement;
+  draggedElement.classList.add('dragging');
+  
+  // 创建占位符
+  placeholder = document.createElement('div');
+  placeholder.className = 'sortable-placeholder';
+  
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', draggedElement.outerHTML);
+}
+
+function handleDragOver(e) {
+  if (!draggedElement) return;
+  
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  
+  const container = e.currentTarget;
+  const afterElement = getDragAfterElement(container, e.clientY);
+  
+  if (afterElement == null) {
+    container.appendChild(placeholder);
+  } else {
+    container.insertBefore(placeholder, afterElement);
+  }
+}
+
+function handleDragEnter(e) {
+  if (!draggedElement) return;
+  e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  // 检查是否真的离开了容器
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+}
+
+function handleDrop(e) {
+  if (!draggedElement) return;
+  
+  e.preventDefault();
+  
+  if (placeholder && placeholder.parentNode) {
+    placeholder.parentNode.insertBefore(draggedElement, placeholder);
+    placeholder.remove();
+  }
+  
+  // 清理样式
+  document.querySelectorAll('.drag-over').forEach(el => {
+    el.classList.remove('drag-over');
+  });
+  
+  // 保存布局
+  saveLayout();
+}
+
+function handleDragEnd(e) {
+  if (!draggedElement) return;
+  
+  draggedElement.classList.remove('dragging');
+  
+  // 清理所有拖拽相关样式
+  document.querySelectorAll('.drag-over').forEach(el => {
+    el.classList.remove('drag-over');
+  });
+  
+  if (placeholder) {
+    placeholder.remove();
+  }
+  
+  draggedElement = null;
+  draggedContainer = null;
+  placeholder = null;
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [...container.querySelectorAll('.sortable-item:not(.dragging)')];
+  
+  return draggableElements.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// 保存布局到localStorage
+function saveLayout() {
+  const layout = {};
+  
+  // 保存侧边栏面板顺序
+  const sidebarPanels = [...document.querySelectorAll('#sidebarContainer .sortable-item')];
+  layout.sidebar = sidebarPanels.map(panel => panel.dataset.panel);
+  
+  // 保存仪表盘卡片顺序
+  const cardContainers = ['#cardsContainer', '#cardsContainer2', '#cardsContainer3'];
+  layout.cards = {};
+  cardContainers.forEach(containerId => {
+    const container = document.querySelector(containerId);
+    if (container) {
+      const cards = [...container.querySelectorAll('.sortable-item')];
+      layout.cards[containerId] = cards.map(card => card.dataset.card);
+    }
+  });
+  
+  // 保存信息面板顺序
+  const dashboardPanels = [...document.querySelectorAll('#dashboardContainer .sortable-item')];
+  layout.dashboard = dashboardPanels.map(panel => panel.dataset.panel);
+  
+  localStorage.setItem('beidou-layout', JSON.stringify(layout));
+}
+
+// 从localStorage加载布局
+function loadLayout() {
+  try {
+    const saved = localStorage.getItem('beidou-layout');
+    if (!saved) return;
+    
+    const layout = JSON.parse(saved);
+    
+    // 恢复侧边栏面板顺序
+    if (layout.sidebar && Array.isArray(layout.sidebar)) {
+      const sidebar = document.getElementById('sidebarContainer');
+      layout.sidebar.forEach(panelType => {
+        const panel = sidebar.querySelector(`[data-panel="${panelType}"]`);
+        if (panel) {
+          sidebar.appendChild(panel);
+        }
+      });
+    }
+    
+    // 恢复卡片顺序
+    if (layout.cards) {
+      Object.entries(layout.cards).forEach(([containerId, cardTypes]) => {
+        const container = document.querySelector(containerId);
+        if (container && Array.isArray(cardTypes)) {
+          cardTypes.forEach(cardType => {
+            const card = container.querySelector(`[data-card="${cardType}"]`);
+            if (card) {
+              container.appendChild(card);
+            }
+          });
+        }
+      });
+    }
+    
+    // 恢复仪表盘面板顺序
+    if (layout.dashboard && Array.isArray(layout.dashboard)) {
+      const dashboard = document.getElementById('dashboardContainer');
+      layout.dashboard.forEach(panelType => {
+        const panel = dashboard.querySelector(`[data-panel="${panelType}"]`);
+        if (panel) {
+          dashboard.appendChild(panel);
+        }
+      });
+    }
+    
+  } catch (error) {
+    console.error('加载布局失败:', error);
+  }
+}
+
+// 重置布局
+function resetLayout() {
+  if (confirm('确定要重置为默认布局吗？')) {
+    localStorage.removeItem('beidou-layout');
+    location.reload();
+  }
+}
+
+// 添加布局控制按钮
+function addLayoutControls() {
+  const controlsDiv = document.createElement('div');
+  controlsDiv.className = 'layout-controls';
+  controlsDiv.innerHTML = `
+    <button class="layout-reset-btn" onclick="resetLayout()">🔄 重置布局</button>
+  `;
+  document.body.appendChild(controlsDiv);
+}
+
+// ========== 卫星图例功能 ==========
+
+// 初始化卫星图例
+function initSkyViewLegend() {
+  const legendToggle = document.getElementById('legendToggle');
+  const legend = document.getElementById('skyviewLegend');
+  
+  if (legendToggle && legend) {
+    legendToggle.addEventListener('click', () => {
+      const isVisible = legend.style.display !== 'none';
+      legend.style.display = isVisible ? 'none' : 'block';
+      legendToggle.textContent = isVisible ? '📋 图例' : '❌ 关闭图例';
+      
+      // 保存图例状态
+      localStorage.setItem('skyview-legend-visible', !isVisible);
+    });
+    
+    // 恢复图例状态
+    const legendVisible = localStorage.getItem('skyview-legend-visible');
+    if (legendVisible === 'true') {
+      legend.style.display = 'block';
+      legendToggle.textContent = '❌ 关闭图例';
+    }
+  }
+}
 
 // ========== Modbus数据对话框相关 ==========
 

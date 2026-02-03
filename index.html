@@ -16,8 +16,8 @@
     </header>
 
     <div class="main-content">
-      <aside class="sidebar">
-        <div class="panel">
+      <aside class="sidebar sortable-container" id="sidebarContainer">
+        <div class="panel sortable-item" draggable="true" data-panel="serial">
           <h3>串口配置</h3>
           <div class="form-group">
             <label>选择串口</label>
@@ -43,8 +43,17 @@
           </div>
         </div>
 
-        <div class="panel">
-          <h3>时区设置</h3>
+        <div class="panel sortable-item" draggable="true" data-panel="gnss">
+          <h3>定位系统设置</h3>
+          <div class="form-group">
+            <label>卫星系统</label>
+            <select id="gnssSelect">
+              <option value="auto" selected>自动（北斗+GPS）</option>
+              <option value="beidou">北斗系统</option>
+              <option value="gps">GPS系统</option>
+            </select>
+            <small style="color: #666; margin-top: 5px; display: block;">选择要接收和显示的卫星系统</small>
+          </div>
           <div class="form-group">
             <label>选择时区</label>
             <select id="timezoneSelect">
@@ -151,7 +160,81 @@
           </div>
         </div>
 
-        <div class="panel">
+        <div class="panel sortable-item" draggable="true" data-panel="modbus">
+          <h3>Modbus TCP服务</h3>
+          <div class="form-group">
+            <label>绑定IP地址</label>
+            <select id="modbusIP">
+              <option value="">-- 选择IP地址 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>端口</label>
+            <input type="number" id="modbusPort" value="502" min="1" max="65535">
+          </div>
+          <div class="button-group">
+            <button id="startModbusBtn" class="btn btn-success">启动</button>
+            <button id="stopModbusBtn" class="btn btn-danger" disabled>停止</button>
+            <button id="showModbusDataBtn" class="btn btn-info">查看寄存器数据</button>
+          </div>
+          <div class="server-status">
+            <span id="modbusStatus" class="status-indicator-text">● 未启动</span>
+          </div>
+        </div>
+
+        <div class="panel sortable-item" draggable="true" data-panel="ntp">
+          <h3>NTP服务</h3>
+          <div class="form-group">
+            <label>绑定IP地址</label>
+            <select id="ntpIP">
+              <option value="">-- 选择IP地址 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>端口</label>
+            <input type="number" id="ntpPort" value="1230" min="1" max="65535">
+            <small style="color: #666;">⚠️ 端口123需要管理员权限，建议使用1230或更高端口</small>
+          </div>
+          <div class="form-group">
+            <label>时区偏移</label>
+            <select id="ntpTimezone">
+              <option value="-12">UTC-12</option>
+              <option value="-11">UTC-11</option>
+              <option value="-10">UTC-10</option>
+              <option value="-9">UTC-9</option>
+              <option value="-8">UTC-8</option>
+              <option value="-7">UTC-7</option>
+              <option value="-6">UTC-6</option>
+              <option value="-5">UTC-5</option>
+              <option value="-4">UTC-4</option>
+              <option value="-3">UTC-3</option>
+              <option value="-2">UTC-2</option>
+              <option value="-1">UTC-1</option>
+              <option value="0">UTC+0</option>
+              <option value="1">UTC+1</option>
+              <option value="2">UTC+2</option>
+              <option value="3">UTC+3</option>
+              <option value="4">UTC+4</option>
+              <option value="5">UTC+5</option>
+              <option value="6">UTC+6</option>
+              <option value="7">UTC+7</option>
+              <option value="8" selected>UTC+8</option>
+              <option value="9">UTC+9</option>
+              <option value="10">UTC+10</option>
+              <option value="11">UTC+11</option>
+              <option value="12">UTC+12</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <button id="startNtpBtn" class="btn btn-success">启动</button>
+            <button id="stopNtpBtn" class="btn btn-danger" disabled>停止</button>
+          </div>
+          <div class="server-status">
+            <span id="ntpStatus" class="status-indicator-text">● 未启动</span>
+          </div>
+        </div>
+
+        <div class="panel sortable-item" draggable="true" data-panel="rawdata">
           <h3>原始数据</h3>
           <div id="rawData" class="raw-data"></div>
         </div>
@@ -159,6 +242,10 @@
 
       <main class="dashboard">
         <div class="cards-row">
+          <div class="card">
+            <h3>定位系统</h3>
+            <div id="gnssDisplay" class="display-value">自动</div>
+          </div>
           <div class="card">
             <h3>日期</h3>
             <div id="dateDisplay" class="display-value">--</div>
@@ -171,6 +258,8 @@
             <h3>海拔</h3>
             <div id="altitudeDisplay" class="display-value">0.0 m</div>
           </div>
+        </div>
+        <div class="cards-row">
           <div class="card">
             <h3>定位状态</h3>
             <div id="statusDisplay" class="display-value">等待数据</div>
@@ -197,10 +286,44 @@
         </div>
 
         <div class="info-panels-row">
-          <div class="info-panel large">
+        <div class="info-panel large sortable-item" draggable="true" data-panel="skyview">
+          <div class="skyview-header">
             <h3>卫星可视化</h3>
-            <canvas id="skyView" width="500" height="500"></canvas>
+            <div class="legend-toggle" id="legendToggle">📋 图例</div>
           </div>
+          <canvas id="skyView" width="500" height="500"></canvas>
+          <div class="skyview-legend" id="skyviewLegend" style="display: none;">
+            <div class="legend-title">图例说明</div>
+            <div class="legend-item">
+              <span class="legend-symbol legend-strong"></span>
+              <span class="legend-label">强信号 (SNR ≥ 30dB)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-symbol legend-moderate"></span>
+              <span class="legend-label">中等信号 (20dB ≤ SNR < 30dB)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-symbol legend-weak"></span>
+              <span class="legend-label">弱信号或无信号 (SNR < 20dB)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-symbol legend-center"></span>
+              <span class="legend-label">中心点：观察者位置（天顶 90°）</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-circle"></span>
+              <span class="legend-label">同心圆：仰角圈（0°、30°、60°、90°）</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-line"></span>
+              <span class="legend-label">放射线：方位角线（每45°一条）</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-numbers">0°-315°</span>
+              <span class="legend-label">方位角刻度（0°为正北，顺时针增加）</span>
+            </div>
+          </div>
+        </div>
 
           <div class="info-panel">
             <h3>卫星信号强度</h3>
