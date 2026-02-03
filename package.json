@@ -1,0 +1,21 @@
+{
+  "name": "beidou-satellite-display",
+  "version": "1.0.0",
+  "description": "北斗卫星串口数据可视化系统",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": ["beidou", "serialport", "gps", "visualization"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^28.0.0",
+    "serialport": "^12.0.0",
+    "modbus-serial": "^8.0.16"
+  },
+  "resolutions": {
+    "got": ">=11.8.5"
+  }
+}

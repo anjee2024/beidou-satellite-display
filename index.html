@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>北斗卫星数据显示系统</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>北斗卫星数据显示系统</h1>
+      <div class="status-indicator">
+        <span id="connectionStatus" class="status offline">● 未连接</span>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <aside class="sidebar">
+        <div class="panel">
+          <h3>串口配置</h3>
+          <div class="form-group">
+            <label>选择串口</label>
+            <select id="portSelect">
+              <option value="">-- 请选择串口 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>波特率</label>
+            <select id="baudRate">
+              <option value="4800">4800</option>
+              <option value="9600" selected>9600</option>
+              <option value="19200">19200</option>
+              <option value="38400">38400</option>
+              <option value="57600">57600</option>
+              <option value="115200">115200</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <button id="connectBtn" class="btn btn-primary">连接</button>
+            <button id="disconnectBtn" class="btn btn-danger" disabled>断开</button>
+            <button id="refreshBtn" class="btn btn-secondary">刷新</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>时区设置</h3>
+          <div class="form-group">
+            <label>选择时区</label>
+            <select id="timezoneSelect">
+              <option value="UTC-12" data-offset="-12">UTC-12</option>
+              <option value="UTC-11" data-offset="-11">UTC-11</option>
+              <option value="UTC-10" data-offset="-10">UTC-10</option>
+              <option value="UTC-9" data-offset="-9">UTC-9</option>
+              <option value="UTC-8" data-offset="-8">UTC-8</option>
+              <option value="UTC-7" data-offset="-7">UTC-7</option>
+              <option value="UTC-6" data-offset="-6">UTC-6</option>
+              <option value="UTC-5" data-offset="-5">UTC-5</option>
+              <option value="UTC-4" data-offset="-4">UTC-4</option>
+              <option value="UTC-3" data-offset="-3">UTC-3</option>
+              <option value="UTC-2" data-offset="-2">UTC-2</option>
+              <option value="UTC-1" data-offset="-1">UTC-1</option>
+              <option value="UTC+0" data-offset="0">UTC+0</option>
+              <option value="UTC+1" data-offset="1">UTC+1</option>
+              <option value="UTC+2" data-offset="2">UTC+2</option>
+              <option value="UTC+3" data-offset="3">UTC+3</option>
+              <option value="UTC+4" data-offset="4">UTC+4</option>
+              <option value="UTC+5" data-offset="5">UTC+5</option>
+              <option value="UTC+6" data-offset="6">UTC+6</option>
+              <option value="UTC+7" data-offset="7">UTC+7</option>
+              <option value="UTC+8" data-offset="8" selected>UTC+8</option>
+              <option value="UTC+9" data-offset="9">UTC+9</option>
+              <option value="UTC+10" data-offset="10">UTC+10</option>
+              <option value="UTC+11" data-offset="11">UTC+11</option>
+              <option value="UTC+12" data-offset="12">UTC+12</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Modbus TCP服务</h3>
+          <div class="form-group">
+            <label>绑定IP地址</label>
+            <select id="modbusIP">
+              <option value="">-- 选择IP地址 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>端口</label>
+            <input type="number" id="modbusPort" value="502" min="1" max="65535">
+          </div>
+          <div class="button-group">
+            <button id="startModbusBtn" class="btn btn-success">启动</button>
+            <button id="stopModbusBtn" class="btn btn-danger" disabled>停止</button>
+            <button id="showModbusDataBtn" class="btn btn-info">查看寄存器数据</button>
+          </div>
+          <div class="server-status">
+            <span id="modbusStatus" class="status-indicator-text">● 未启动</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>NTP服务</h3>
+          <div class="form-group">
+            <label>绑定IP地址</label>
+            <select id="ntpIP">
+              <option value="">-- 选择IP地址 --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>端口</label>
+            <input type="number" id="ntpPort" value="1230" min="1" max="65535">
+            <small style="color: #666;">⚠️ 端口123需要管理员权限，建议使用1230或更高端口</small>
+          </div>
+          <div class="form-group">
+            <label>时区偏移</label>
+            <select id="ntpTimezone">
+              <option value="-12">UTC-12</option>
+              <option value="-11">UTC-11</option>
+              <option value="-10">UTC-10</option>
+              <option value="-9">UTC-9</option>
+              <option value="-8">UTC-8</option>
+              <option value="-7">UTC-7</option>
+              <option value="-6">UTC-6</option>
+              <option value="-5">UTC-5</option>
+              <option value="-4">UTC-4</option>
+              <option value="-3">UTC-3</option>
+              <option value="-2">UTC-2</option>
+              <option value="-1">UTC-1</option>
+              <option value="0">UTC+0</option>
+              <option value="1">UTC+1</option>
+              <option value="2">UTC+2</option>
+              <option value="3">UTC+3</option>
+              <option value="4">UTC+4</option>
+              <option value="5">UTC+5</option>
+              <option value="6">UTC+6</option>
+              <option value="7">UTC+7</option>
+              <option value="8" selected>UTC+8</option>
+              <option value="9">UTC+9</option>
+              <option value="10">UTC+10</option>
+              <option value="11">UTC+11</option>
+              <option value="12">UTC+12</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <button id="startNtpBtn" class="btn btn-success">启动</button>
+            <button id="stopNtpBtn" class="btn btn-danger" disabled>停止</button>
+          </div>
+          <div class="server-status">
+            <span id="ntpStatus" class="status-indicator-text">● 未启动</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>原始数据</h3>
+          <div id="rawData" class="raw-data"></div>
+        </div>
+      </aside>
+
+      <main class="dashboard">
+        <div class="cards-row">
+          <div class="card">
+            <h3>日期</h3>
+            <div id="dateDisplay" class="display-value">--</div>
+          </div>
+          <div class="card">
+            <h3>时间</h3>
+            <div id="timeDisplay" class="display-value">--:--:--</div>
+          </div>
+          <div class="card">
+            <h3>海拔</h3>
+            <div id="altitudeDisplay" class="display-value">0.0 m</div>
+          </div>
+          <div class="card">
+            <h3>定位状态</h3>
+            <div id="statusDisplay" class="display-value">等待数据</div>
+          </div>
+        </div>
+
+        <div class="cards-row">
+          <div class="card">
+            <h3>卫星数量</h3>
+            <div id="satellitesDisplay" class="display-value">0</div>
+          </div>
+          <div class="card">
+            <h3>经度</h3>
+            <div id="longitudeDisplay" class="display-value">0.000000</div>
+          </div>
+          <div class="card">
+            <h3>纬度</h3>
+            <div id="latitudeDisplay" class="display-value">0.000000</div>
+          </div>
+          <div class="card">
+            <h3>定位质量</h3>
+            <div id="qualityDisplay" class="display-value">--</div>
+          </div>
+        </div>
+
+        <div class="info-panels-row">
+          <div class="info-panel large">
+            <h3>卫星可视化</h3>
+            <canvas id="skyView" width="500" height="500"></canvas>
+          </div>
+
+          <div class="info-panel">
+            <h3>卫星信号强度</h3>
+            <div id="signalBars" class="signal-bars"></div>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <h3>DOP值（精度因子）</h3>
+          <div class="dop-values">
+            <div class="dop-item">
+              <span>PDOP:</span>
+              <span id="pdopValue">--</span>
+            </div>
+            <div class="dop-item">
+              <span>HDOP:</span>
+              <span id="hdopValue">--</span>
+            </div>
+            <div class="dop-item">
+              <span>VDOP:</span>
+              <span id="vdopValue">--</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modbus数据对话框 -->
+  <div id="modbusDataModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Modbus 寄存器数据</h2>
+        <span class="close-btn">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="holding">保持寄存器</button>
+          <button class="tab-btn" data-tab="input">输入寄存器</button>
+        </div>
+        <div class="tab-content active" id="holding-tab">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Modbus地址</th>
+                <th>内部索引</th>
+                <th>寄存器名称</th>
+                <th>数据类型</th>
+                <th>实时值</th>
+              </tr>
+            </thead>
+            <tbody id="holdingTableBody">
+              <tr><td>1</td><td>0</td><td>年</td><td>UINT16</td><td id="reg-1">0</td></tr>
+              <tr><td>2</td><td>1</td><td>月</td><td>UINT16</td><td id="reg-2">0</td></tr>
+              <tr><td>3</td><td>2</td><td>日</td><td>UINT16</td><td id="reg-3">0</td></tr>
+              <tr><td>4</td><td>3</td><td>时</td><td>UINT16</td><td id="reg-4">0</td></tr>
+              <tr><td>5</td><td>4</td><td>分</td><td>UINT16</td><td id="reg-5">0</td></tr>
+              <tr><td>6</td><td>5</td><td>秒</td><td>UINT16</td><td id="reg-6">0</td></tr>
+              <tr><td>7</td><td>6</td><td>海拔(整数)</td><td>INT16</td><td id="reg-7">0</td></tr>
+              <tr><td>8</td><td>7</td><td>海拔(小数)</td><td>UINT16</td><td id="reg-8">0</td></tr>
+              <tr><td>9</td><td>8</td><td>纬度(整数)</td><td>INT16</td><td id="reg-9">0</td></tr>
+              <tr><td>10</td><td>9</td><td>纬度(小数)</td><td>UINT16</td><td id="reg-10">0</td></tr>
+              <tr><td>11</td><td>10</td><td>经度(整数)</td><td>INT16</td><td id="reg-11">0</td></tr>
+              <tr><td>12</td><td>11</td><td>经度(小数)</td><td>UINT16</td><td id="reg-12">0</td></tr>
+              <tr><td>13</td><td>12</td><td>卫星数量</td><td>UINT16</td><td id="reg-13">0</td></tr>
+              <tr><td>14</td><td>13</td><td>定位质量</td><td>UINT16</td><td id="reg-14">0</td></tr>
+              <tr><td>15</td><td>14</td><td>PDOP(整数)</td><td>UINT16</td><td id="reg-15">0</td></tr>
+              <tr><td>16</td><td>15</td><td>PDOP(小数)</td><td>UINT16</td><td id="reg-16">0</td></tr>
+              <tr><td>17</td><td>16</td><td>HDOP(整数)</td><td>UINT16</td><td id="reg-17">0</td></tr>
+              <tr><td>18</td><td>17</td><td>HDOP(小数)</td><td>UINT16</td><td id="reg-18">0</td></tr>
+              <tr><td>19</td><td>18</td><td>VDOP(整数)</td><td>UINT16</td><td id="reg-19">0</td></tr>
+              <tr><td>20</td><td>19</td><td>VDOP(小数)</td><td>UINT16</td><td id="reg-20">0</td></tr>
+              <tr><td>21</td><td>20</td><td>定位状态</td><td>UINT16</td><td id="reg-21">0</td></tr>
+              <tr><td>22</td><td>21</td><td>时区偏移</td><td>INT16</td><td id="reg-22">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tab-content" id="input-tab">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Modbus地址</th>
+                <th>内部索引</th>
+                <th>寄存器名称</th>
+                <th>数据类型</th>
+                <th>实时值</th>
+              </tr>
+            </thead>
+            <tbody id="inputTableBody">
+              <tr><td>1</td><td>0</td><td>时间戳</td><td>UINT32</td><td id="input-reg-1">0</td></tr>
+              <tr><td>2</td><td>1</td><td>原始海拔值</td><td>INT16</td><td id="input-reg-2">0</td></tr>
+              <tr><td>3</td><td>2</td><td>原始纬度值</td><td>INT32</td><td id="input-reg-3">0</td></tr>
+              <tr><td>4</td><td>3</td><td>原始经度值</td><td>INT32</td><td id="input-reg-4">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
